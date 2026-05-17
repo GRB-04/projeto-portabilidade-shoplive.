@@ -1,0 +1,33 @@
+# ============================================================
+# ShopLive — docker-compose.yml
+# ============================================================
+# Run with:  docker compose up --build
+# Access at: http://localhost:8080
+# ============================================================
+
+services:
+  shoplive:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"          # Maps host port 8080 → nginx port 80
+    container_name: shoplive-app
+    restart: unless-stopped
+
+# ── Notes for Portability Testing ────────────────────────────
+# This single command spins up the entire app in a reproducible
+# environment:
+#
+#   docker compose up --build
+#
+# Version A (Broken):   http://localhost:8080/version-a/
+# Version B (Fixed):    http://localhost:8080/version-b/
+# Landing page:         http://localhost:8080/
+#
+# The app will behave identically on:
+#   - Windows + Docker Desktop
+#   - macOS + Docker Desktop
+#   - Linux + Docker Engine
+#   - Any CI/CD pipeline
+# ─────────────────────────────────────────────────────────────

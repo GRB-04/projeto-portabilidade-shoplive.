@@ -1,0 +1,66 @@
+/*
+ * VERSION B — FIXED RESPONSIVE STYLESHEET
+ * [PORTABILITY FIX] All sizing uses responsive, fluid units.
+ * No fixed min-width — page adapts to any device width.
+ * This is critical for e-commerce: 70%+ of live shopping traffic is mobile.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* [PORTABILITY FIX] Fluid body — no forced minimum width */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #0a0a0a;
+  color: #ffffff;
+  overflow-x: hidden; /* Prevents horizontal scroll on any screen size */
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #141414; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* Live badge pulse animation */
+@keyframes pulseRed {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.live-dot { animation: pulseRed 1.2s ease-in-out infinite; }
+
+/* Chat message slide-in */
+@keyframes slideInMsg {
+  from { transform: translateX(-10px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+.chat-msg { animation: slideInMsg 0.3s ease-out; }
+
+/* Mobile drawer slide-in */
+@keyframes drawerSlideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+.mobile-drawer { animation: drawerSlideDown 0.25s ease-out; }
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #ff2d2d, #ff6b35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow button */
+.btn-live {
+  background: linear-gradient(135deg, #ff2d2d, #ff6b35);
+  box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-live:hover {
+  box-shadow: 0 0 35px rgba(255, 45, 45, 0.7);
+  transform: translateY(-1px);
+}
+
+/* [PORTABILITY FIX] Ensures all images scale within their containers */
+img { max-width: 100%; height: auto; }
