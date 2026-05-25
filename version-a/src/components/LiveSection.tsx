@@ -43,7 +43,6 @@ export default function LiveSection({ messages, onSendMessage }: LiveSectionProp
       const v = videoRef.current;
       if (v) {
         v.muted = false;
-        setIsMuted(false);
         v.play().catch(e => console.log("Play on gesture failed:", e));
       }
       cleanupGestureListeners();
@@ -56,13 +55,11 @@ export default function LiveSection({ messages, onSendMessage }: LiveSectionProp
 
     if (video) {
       video.muted = false;
-      setIsMuted(false);
 
       if (isPlaying) {
         video.play().catch(err => {
           console.log("Autoplay unmuted blocked, falling back to muted autoplay + gesture listener:", err);
           video.muted = true;
-          setIsMuted(true);
           video.play().catch(err2 => {
             console.log("Autoplay completely blocked:", err2);
           });
@@ -100,6 +97,11 @@ export default function LiveSection({ messages, onSendMessage }: LiveSectionProp
       const nextMuted = !isMuted;
       video.muted = nextMuted;
       setIsMuted(nextMuted);
+      if (!nextMuted) {
+        // Ensure playback starts when unmuted
+        video.play().catch(err => console.log('Play after unmute failed:', err));
+        setIsPlaying(true);
+      }
     }
   };
 
