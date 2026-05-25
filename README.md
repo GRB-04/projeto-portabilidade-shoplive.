@@ -45,5 +45,5 @@ Você não precisa instalar Node.js, NPM ou configurar servidores. A única depe
    - [http://localhost:8080/version-b/](http://localhost:8080/version-b/) (Cenário de Sucesso)
 
 ## 👥 Desenvolvido por
-- Gabriel (Teste de Portabilidade)
-- *[Adicione os membros do seu grupo aqui]*
+- Gabriel Bezerra, Renan Gomes, Ector Magalhães, Giovani Bruno, Adalberto Crateus e Fernando Yokoyama
+
