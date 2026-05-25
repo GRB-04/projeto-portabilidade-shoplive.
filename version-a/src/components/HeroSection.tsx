@@ -41,7 +41,7 @@ export default function HeroSection() {
 
   return (
     // [PORTABILITY ISSUE] Fixed width + overflow visible = horizontal scroll on mobile
-    <section style={{ width: '1400px', paddingTop: '120px', paddingBottom: '80px', overflow: 'visible' }}
+    <section style={{ width: '1400px', paddingTop: '24px', paddingBottom: '80px', overflow: 'visible' }}
              className="relative">
 
       {/* Background image */}

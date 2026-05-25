@@ -39,8 +39,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/version-a/dist /usr/share/nginx/html/version-a
 COPY --from=builder /app/version-b/dist /usr/share/nginx/html/version-b
 
-# Copy landing page
+# Copy landing page and report page
 COPY landing/index.html /usr/share/nginx/html/index.html
+COPY landing/report.html /usr/share/nginx/html/report.html
 
 EXPOSE 80
 

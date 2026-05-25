@@ -12,12 +12,22 @@
  * Fluid video containers prevent letterboxing and overflow across devices.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function LiveSection() {
+interface LiveSectionProps {
+  messages: any[];
+  onSendMessage: (text: string) => void;
+}
+
+export default function LiveSection({ messages, onSendMessage }: LiveSectionProps) {
   const [viewerCount, setViewerCount] = useState(24831);
   const [likes, setLikes] = useState(18492);
   const [likeAnimating, setLikeAnimating] = useState(false);
+  const [inputVal, setInputVal] = useState('');
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -26,10 +36,97 @@ export default function LiveSection() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    let gestureActive = false;
+
+    const unmuteOnGesture = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('button') && (target.textContent === '🔇' || target.textContent === '🔊')) {
+        cleanupGestureListeners();
+        return;
+      }
+
+      const v = videoRef.current;
+      if (v) {
+        v.muted = false;
+        setIsMuted(false);
+        v.play().catch(e => console.log("Play on gesture failed:", e));
+      }
+      cleanupGestureListeners();
+    };
+
+    const cleanupGestureListeners = () => {
+      window.removeEventListener('click', unmuteOnGesture);
+      window.removeEventListener('touchstart', unmuteOnGesture);
+    };
+
+    if (video) {
+      video.muted = false;
+      setIsMuted(false);
+
+      if (isPlaying) {
+        video.play().catch(err => {
+          console.log("Autoplay unmuted blocked, falling back to muted autoplay + gesture listener:", err);
+          video.muted = true;
+          setIsMuted(true);
+          video.play().catch(err2 => {
+            console.log("Autoplay completely blocked:", err2);
+          });
+
+          window.addEventListener('click', unmuteOnGesture);
+          window.addEventListener('touchstart', unmuteOnGesture);
+          gestureActive = true;
+        });
+      }
+    }
+
+    return () => {
+      if (gestureActive) {
+        cleanupGestureListeners();
+      }
+    };
+  }, []);
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (video) {
+      if (isPlaying) {
+        video.pause();
+        setIsPlaying(false);
+      } else {
+        video.play().catch(err => console.log(err));
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (video) {
+      const nextMuted = !isMuted;
+      video.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
+
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
+
   const handleLike = () => {
     setLikes(l => l + 1);
     setLikeAnimating(true);
     setTimeout(() => setLikeAnimating(false), 300);
+  };
+
+  const handleSend = () => {
+    if (!inputVal.trim()) return;
+    onSendMessage(inputVal.trim());
+    setInputVal('');
   };
 
   return (
@@ -48,21 +145,21 @@ export default function LiveSection() {
           </h2>
         </div>
 
-        {/* [PORTABILITY FIX] flex-col on mobile → flex-row on large screens */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        {/* [PORTABILITY FIX] grid columns and rows on large screens to align video and chat side-by-side */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_auto] gap-6 items-stretch">
 
-          {/* Video container — [PORTABILITY FIX] flex-1 + aspect-video = fluid 16:9 */}
-          <div className="flex-1 min-w-0">
+          {/* Video container — [PORTABILITY FIX] fluid 16:9 aspect ratio */}
+          <div className="min-w-0 lg:col-start-1 lg:col-end-2 lg:row-start-1 lg:row-end-2">
             <div className="rounded-2xl overflow-hidden border" style={{ background: '#141414', borderColor: 'rgba(255,255,255,0.08)' }}>
               {/* [PORTABILITY FIX] aspect-video makes height always = width × 9/16 */}
               <div className="relative aspect-video w-full overflow-hidden"
                    style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
-                <video src="live_video.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover opacity-100" />
+                <video ref={videoRef} src="live_video.mp4" autoPlay loop muted={isMuted} playsInline className="w-full h-full object-cover opacity-100" />
                 {/* LIVE badge */}
                 <div className="absolute top-3 left-3 flex items-center gap-2 z-20">
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black text-white tracking-wider"
                        style={{ background: '#ff2d2d' }}>
-                    <div className="live-dot w-1.5 h-1.5 rounded-full bg-white" /> AO VIVO
+                     <div className="live-dot w-1.5 h-1.5 rounded-full bg-white" /> AO VIVO
                   </div>
                   <div className="px-2.5 py-1 rounded-md text-xs text-white"
                        style={{ background: 'rgba(0,0,0,0.7)' }}>
@@ -76,8 +173,12 @@ export default function LiveSection() {
 
               {/* Controls bar */}
               <div className="flex items-center gap-3 px-4 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                <button className="text-white text-xl cursor-pointer bg-transparent border-none">⏸</button>
-                <button className="text-white text-xl cursor-pointer bg-transparent border-none">🔊</button>
+                <button onClick={togglePlay} className="text-white text-xl cursor-pointer bg-transparent border-none">
+                  {isPlaying ? '⏸' : '▶'}
+                </button>
+                <button onClick={toggleMute} className="text-white text-xl cursor-pointer bg-transparent border-none">
+                  {isMuted ? '🔇' : '🔊'}
+                </button>
                 <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
                   <div className="w-[65%] h-full rounded-full" style={{ background: 'linear-gradient(90deg, #ff2d2d, #ff6b35)' }} />
                 </div>
@@ -87,29 +188,30 @@ export default function LiveSection() {
                 </button>
               </div>
             </div>
-
-            {/* [PORTABILITY FIX] Stats: 2 cols on mobile, 4 on sm+ */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-              {[
-                { icon: '👁', label: 'Assistindo Agora', val: viewerCount.toLocaleString('pt-BR') },
-                { icon: '🛒', label: 'Pedidos', val: '4.821' },
-                { icon: '💰', label: 'Receita', val: 'R$892K' },
-                { icon: '⭐', label: 'Avaliação', val: '4.9/5' },
-              ].map(stat => (
-                <div key={stat.label} className="rounded-xl p-3 sm:p-4 text-center"
-                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="text-xl sm:text-2xl mb-1">{stat.icon}</div>
-                  <div className="text-base sm:text-lg font-bold text-white">{stat.val}</div>
-                  <div className="text-xs text-gray-600 mt-0.5">{stat.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Chat panel — [PORTABILITY FIX] full-width on mobile, fixed 300px on lg+ */}
-          <div className="w-full lg:w-[300px] lg:flex-shrink-0 rounded-2xl border flex flex-col"
-               style={{ background: '#141414', borderColor: 'rgba(255,255,255,0.08)', height: '420px', minHeight: '300px' }}>
-            <div className="flex items-center gap-2 px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          {/* [PORTABILITY FIX] Stats: 2 cols on mobile, 4 on sm+ */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 lg:mt-0 lg:col-start-1 lg:col-end-2 lg:row-start-2 lg:row-end-3">
+            {[
+              { icon: '👁', label: 'Assistindo Agora', val: viewerCount.toLocaleString('pt-BR') },
+              { icon: '🛒', label: 'Pedidos', val: '4.821' },
+              { icon: '💰', label: 'Receita', val: 'R$892K' },
+              { icon: '⭐', label: 'Avaliação', val: '4.9/5' },
+            ].map(stat => (
+              <div key={stat.label} className="rounded-xl p-3 sm:p-4 text-center"
+                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="text-xl sm:text-2xl mb-1">{stat.icon}</div>
+                <div className="text-base sm:text-lg font-bold text-white">{stat.val}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chat panel — [PORTABILITY FIX] full-width on mobile, matches video height on lg+ */}
+          <div className="relative w-full lg:w-[300px] lg:flex-shrink-0 lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2 h-[480px] lg:h-full">
+            <div className="absolute inset-0 rounded-2xl border flex flex-col min-h-0"
+                 style={{ background: '#141414', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-2 px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
               <span>💬</span>
               <span className="font-bold text-white text-sm">Chat ao Vivo</span>
               <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -117,39 +219,33 @@ export default function LiveSection() {
                 {viewerCount.toLocaleString('pt-BR')} online
               </span>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
-              {[
-                { user: 'Alex_M', msg: 'Cara, esse Notebook Neo tá com desconto absurdo!! 🔥', emoji: '🧑' },
-                { user: 'Sarah_K', msg: 'O chip do MacBook vale cada centavo 😍', emoji: '👩' },
-                { user: 'TechGuru', msg: 'O Apple Watch novo monitora o sono?', emoji: '🧑‍💻' },
-                { user: 'Mike_R', msg: 'SIM — e sincroniza perfeito com o Neo!', emoji: '👨' },
-                { user: 'LiveHost', msg: 'Integração incrível com o ecossistema da Apple 🎙️', emoji: '🎙️' },
-                { user: 'Priya_D', msg: 'Vou levar o iPad e o Neo, carteira chorando 😂', emoji: '👩‍🦱' },
-                { user: 'Bruno_99', msg: 'Boletei o Mac! Não aguentei hahaha', emoji: '😎' },
-                { user: 'Ana_Silva', msg: 'A bateria do Neo dura o dia todo?', emoji: '🙋‍♀️' },
-                { user: 'TechGuru', msg: 'Dura umas 18 horas tranquilo, Ana.', emoji: '🧑‍💻' },
-                { user: 'Carlos_V', msg: 'A tela Liquid Retina é um absurdo de linda', emoji: '🤩' },
-                { user: 'Julia_M', msg: 'Já garanti meu presente adiantado 🎁', emoji: '👩' },
-                { user: 'Bia_Apple', msg: 'Esse preço não volta nunca mais!', emoji: '😱' },
-              ].map((m, i) => (
-                <div key={i} className="chat-msg flex gap-2 items-start">
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
+              {messages.map((m) => (
+                <div key={m.id} className="chat-msg flex gap-2 items-start">
                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-                       style={{ background: 'rgba(255,255,255,0.08)' }}>{m.emoji}</div>
-                  <div>
-                    <span className="text-xs font-bold" style={{ color: '#ff6b35' }}>{m.user} </span>
-                    <span className="text-xs text-gray-400">{m.msg}</span>
+                       style={{ background: 'rgba(255,255,255,0.08)' }}>{m.avatar}</div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-bold" style={{ color: m.user === 'You' ? '#22c55e' : '#ff6b35' }}>{m.user} </span>
+                    <span className="text-xs text-gray-400 break-words">{m.message}</span>
                   </div>
                 </div>
               ))}
             </div>
             <div className="flex gap-2 p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-              <input placeholder="Diga algo..." className="flex-1 rounded-lg px-3 py-2 text-sm text-white outline-none"
-                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }} />
-              <button className="btn-live border-none rounded-lg text-white px-3 py-2 cursor-pointer font-bold text-base">↑</button>
+              <input
+                value={inputVal}
+                onChange={e => setInputVal(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSend()}
+                placeholder="Diga algo..."
+                className="flex-1 rounded-lg px-3 py-2 text-sm text-white outline-none"
+                style={{ background: 'rgba(255,255,256,0.06)', border: '1px solid rgba(255,255,256,0.12)' }}
+              />
+              <button onClick={handleSend} className="btn-live border-none rounded-lg text-white px-3 py-2 cursor-pointer font-bold text-base">↑</button>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
   );
 }

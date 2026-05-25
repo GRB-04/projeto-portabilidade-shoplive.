@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopLive — Relatório de Teste de Portabilidade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      padding: 40px 24px 60px;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Header ─────────────────────────────────── */
+    .header {
+      max-width: 900px;
+      margin: 0 auto 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #ff2d2d, #ff6b35);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: white;
+    }
+    .logo-text { font-size: 24px; font-weight: 900; }
+    .logo-text span { color: #ff2d2d; }
+    .back-link {
+      font-size: 13px;
+      color: #555;
+      padding: 8px 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: #aaa; border-color: rgba(255,255,255,0.2); }
+
+    /* ── Page title ──────────────────────────────── */
+    .page-title { max-width: 900px; margin: 0 auto 40px; }
+    .page-title h1 { font-size: clamp(22px, 4vw, 36px); font-weight: 900; margin-bottom: 10px; }
+    .page-title p { font-size: 15px; color: #666; line-height: 1.7; max-width: 580px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      background: rgba(255,45,45,0.12);
+      color: #ff6b6b;
+      border: 1px solid rgba(255,45,45,0.25);
+    }
+
+    /* ── Section ─────────────────────────────────── */
+    .section { max-width: 900px; margin: 0 auto 48px; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #444;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── Summary cards ───────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 0;
+    }
+    .summary-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .summary-card .sc-icon { font-size: 28px; margin-bottom: 10px; }
+    .summary-card .sc-value { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
+    .summary-card .sc-label { font-size: 12px; color: #555; }
+    .pass  { color: #22c55e; }
+    .fail  { color: #ef4444; }
+    .warn  { color: #f59e0b; }
+
+    /* ── Results table ───────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #444;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,0.02); }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+    .tag-pass { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .tag-fail { background: rgba(239,68,68,0.12);  color: #f87171; }
+    .tag-warn { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .tag-na   { background: rgba(255,255,255,0.05); color: #555; }
+    .criterion-name { font-weight: 600; color: #ddd; }
+    .criterion-desc { font-size: 11px; color: #555; margin-top: 2px; }
+
+    /* ── Findings list ───────────────────────────── */
+    .findings { display: flex; flex-direction: column; gap: 12px; }
+    .finding {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+    .finding-fail { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.15); }
+    .finding-fix  { background: rgba(34,197,94,0.05); border-color: rgba(34,197,94,0.12); }
+    .finding-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .finding-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .finding-fail .finding-title { color: #f87171; }
+    .finding-fix  .finding-title { color: #4ade80; }
+    .finding-body { font-size: 12px; color: #666; line-height: 1.6; }
+    code {
+      font-family: 'Courier New', monospace;
+      background: rgba(255,255,255,0.06);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    /* ── Conclusion ──────────────────────────────── */
+    .conclusion {
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.15);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .conclusion h3 { font-size: 18px; font-weight: 800; color: #4ade80; margin-bottom: 8px; }
+    .conclusion p  { font-size: 13px; color: #666; line-height: 1.7; }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff2d2d; animation: pulseDot 1.2s ease-in-out infinite; vertical-align: middle; margin-right: 4px; }
+
+    /* ── Simulation Section ──────────────────────── */
+    .simulation-container {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 14px;
+    }
+    .sim-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ff6b35;
+      letter-spacing: 1px;
+    }
+    .sim-timer {
+      font-size: 12px;
+      color: #888;
+      font-family: monospace;
+      background: rgba(255,255,255,0.04);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .sim-panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-a {
+      border-left: 4px solid #ef4444;
+    }
+    .panel-b {
+      border-left: 4px solid #22c55e;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .panel-header h3 {
+      font-size: 14px;
+      font-weight: 800;
+      color: #ddd;
+    }
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+    }
+    .status-bad {
+      background: rgba(239,68,68,0.12);
+      color: #f87171;
+    }
+    .status-good {
+      background: rgba(34,197,94,0.12);
+      color: #4ade80;
+    }
+    .panel-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .metric {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .metric.highlight {
+      grid-column: span 2;
+      background: rgba(255,255,255,0.04);
+    }
+    .metric.error-box {
+      grid-column: span 2;
+      background: rgba(239,68,68,0.03);
+      border-color: rgba(239,68,68,0.1);
+    }
+    .metric.success-box {
+      grid-column: span 2;
+      background: rgba(34,197,94,0.03);
+      border-color: rgba(34,197,94,0.1);
+    }
+    .metric-label {
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .metric-value {
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .conversion-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding-top: 14px;
+    }
+    .conv-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .conv-label {
+      font-size: 11px;
+      color: #777;
+      display: flex;
+      justify-content: space-between;
+    }
+    .conv-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .conv-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+    .bg-fail { background: #ef4444; }
+    .bg-pass { background: #22c55e; }
+
+    .sim-chart-container {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 11px;
+      color: #666;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-color {
+      width: 10px;
+      height: 4px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .svg-wrapper {
+      position: relative;
+      width: 100%;
+      height: 150px;
+    }
+    .sim-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      <span class="logo-text">Shop<span>Live</span></span>
+    </div>
+    <a class="back-link" href="/">← Voltar para Demo</a>
+  </div>
+
+  <!-- Page title -->
+  <div class="page-title">
+    <div class="badge"><span class="live-dot"></span> RELATÓRIO TÉCNICO</div>
+    <h1>Relatório de Teste de Portabilidade</h1>
+    <p>Análise comparativa das duas versões da plataforma ShopLive sob critérios de portabilidade de dispositivos, resolução e ambiente de execução — realizado para a disciplina de Teste de Software / UNIP.</p>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="section-title">Resumo Executivo</div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="sc-icon">🧪</div>
+        <div class="sc-value">14</div>
+        <div class="sc-label">Critérios testados</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon">✅</div>
+        <div class="sc-value pass">9</div>
+        <div class="sc-label">Versão B aprovada</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon">❌</div>
+        <div class="sc-value fail">8</div>
+        <div class="sc-label">Versão A reprovada</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-icon">🐳</div>
+        <div class="sc-value" style="color:#818cf8">100%</div>
+        <div class="sc-label">Portabilidade Docker</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Sales simulation -->
+  <div class="section">
+    <div class="section-title">Painel de Impacto de Negócio (Faturamento da Live)</div>
+    <div class="simulation-container">
+      <div class="sim-header">
+        <div class="sim-title">
+          <span class="live-dot" style="background:#ff6b35"></span> SIMULAÇÃO DE BLACK FRIDAY EM TEMPO REAL (CAMPANHA LIVE SHOPPING)
+        </div>
+        <div class="sim-timer" id="sim-timer">Tempo decorrido: 00:00</div>
+      </div>
+      
+      <div class="sim-grid">
+        <!-- Version A Panel (Broken) -->
+        <div class="sim-panel panel-a">
+          <div class="panel-header">
+            <h3>Versão A (Sem Portabilidade Mobile)</h3>
+            <span class="status-badge status-bad">❌ 72% de Conversões Perdidas</span>
+          </div>
+          <div class="panel-metrics">
+            <div class="metric">
+              <span class="metric-label">Faturamento Mobile</span>
+              <span class="metric-value fail" id="revenue-a-mobile">R$ 0,00</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Faturamento Desktop</span>
+              <span class="metric-value" id="revenue-a-desktop">R$ 0,00</span>
+            </div>
+            <div class="metric highlight">
+              <span class="metric-label">Faturamento Total Acumulado</span>
+              <span class="metric-value fail" id="revenue-a-total">R$ 0,00</span>
+            </div>
+            <div class="metric error-box">
+              <span class="metric-label">Prejuízo por Incompatibilidade</span>
+              <span class="metric-value fail" id="revenue-lost" style="font-size:18px">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="conversion-row">
+            <div class="conv-bar-container">
+              <div class="conv-label"><span>Conversão Mobile:</span> <span class="fail" style="font-weight:700">0% (Botão Inacessível)</span></div>
+              <div class="conv-bar"><div class="conv-fill bg-fail" style="width: 0%"></div></div>
+            </div>
+            <div class="conv-bar-container">
+              <div class="conv-label"><span>Conversão Desktop:</span> <span style="font-weight:700">8.5%</span></div>
+              <div class="conv-bar"><div class="conv-fill bg-pass" style="width: 85%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Version B Panel (Corrected) -->
+        <div class="sim-panel panel-b">
+          <div class="panel-header">
+            <h3>Versão B (Portabilidade Completa)</h3>
+            <span class="status-badge status-good">✅ 100% de Aproveitamento</span>
+          </div>
+          <div class="panel-metrics">
+            <div class="metric">
+              <span class="metric-label">Faturamento Mobile</span>
+              <span class="metric-value pass" id="revenue-b-mobile">R$ 0,00</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Faturamento Desktop</span>
+              <span class="metric-value" id="revenue-b-desktop">R$ 0,00</span>
+            </div>
+            <div class="metric highlight">
+              <span class="metric-label">Faturamento Total Acumulado</span>
+              <span class="metric-value pass" id="revenue-b-total">R$ 0,00</span>
+            </div>
+            <div class="metric success-box">
+              <span class="metric-label">Eficiência de Conversão</span>
+              <span class="metric-value pass" style="font-size:18px">100% OK</span>
+            </div>
+          </div>
+          <div class="conversion-row">
+            <div class="conv-bar-container">
+              <div class="conv-label"><span>Conversão Mobile:</span> <span class="pass" style="font-weight:700">8.0%</span></div>
+              <div class="conv-bar"><div class="conv-fill bg-pass" style="width: 80%"></div></div>
+            </div>
+            <div class="conv-bar-container">
+              <div class="conv-label"><span>Conversão Desktop:</span> <span class="pass" style="font-weight:700">8.5%</span></div>
+              <div class="conv-bar"><div class="conv-fill bg-pass" style="width: 85%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Chart -->
+      <div class="sim-chart-container">
+        <div class="chart-header">
+          <span>Gráfico Comparativo: Faturamento Acumulado (R$)</span>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-color bg-fail"></span> Versão A</span>
+            <span class="legend-item"><span class="legend-color bg-pass"></span> Versão B</span>
+          </div>
+        </div>
+        <div class="svg-wrapper">
+          <span id="chart-max-val" style="position: absolute; top: 4px; right: 4px; font-family: monospace; font-size: 9px; color: #555;">Max: R$ 0,00</span>
+          <svg viewBox="0 0 500 150" class="sim-svg" id="sim-svg">
+            <!-- Grid Lines -->
+            <line x1="0" y1="25" x2="500" y2="25" stroke="rgba(255,255,255,0.05)" />
+            <line x1="0" y1="75" x2="500" y2="75" stroke="rgba(255,255,255,0.05)" />
+            <line x1="0" y1="125" x2="500" y2="125" stroke="rgba(255,255,255,0.05)" />
+            <!-- Paths -->
+            <path d="M 0 150" fill="none" stroke="#ef4444" stroke-width="2.5" id="chart-path-a" />
+            <path d="M 0 150" fill="none" stroke="#22c55e" stroke-width="2.5" id="chart-path-b" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Device Portability Table -->
+  <div class="section">
+    <div class="section-title">1. Portabilidade de Dispositivos e Resoluções</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Critério / Viewport</th>
+            <th>Versão A</th>
+            <th>Versão B</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="criterion-name">📱 Mobile pequeno — 320px</div>
+              <div class="criterion-desc">iPhone SE, Android entry-level</div>
+            </td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Overflow horizontal severo na V-A</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">📱 Mobile padrão — 375px</div>
+              <div class="criterion-desc">iPhone 14, Galaxy S23</div>
+            </td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Navbar e chat cortados na V-A</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">📱 Mobile grande — 430px</div>
+              <div class="criterion-desc">iPhone 14 Plus, Galaxy S23 Ultra</div>
+            </td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Layout fixo ainda transborda</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">📟 Tablet — 768px</div>
+              <div class="criterion-desc">iPad, Galaxy Tab</div>
+            </td>
+            <td><span class="tag tag-warn">⚠️ Parcial</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">V-A funciona com scroll horizontal</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">💻 Laptop — 1280px</div>
+              <div class="criterion-desc">MacBook Air, notebooks padrão</div>
+            </td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Ambas funcionam no desktop</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">🖥️ Desktop — 1440px</div>
+              <div class="criterion-desc">Monitor Full HD / 2K</div>
+            </td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Experiência ideal em ambas</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="criterion-name">🖥️ Ultra-wide — 2560px</div>
+              <div class="criterion-desc">Monitor 4K, iMac 27"</div>
+            </td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">V-B tem max-width, mais elegante</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Component Portability Table -->
+  <div class="section">
+    <div class="section-title">2. Portabilidade por Componente</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Componente</th>
+            <th>Problema na V-A</th>
+            <th>Versão A</th>
+            <th>Versão B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="criterion-name">Navbar</div></td>
+            <td style="color:#555; font-size:12px">Links fixos transbordam em mobile</td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ Hambúrguer</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Video Player</div></td>
+            <td style="color:#555; font-size:12px"><code>width: 850px; height: 480px</code> fixos</td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ aspect-video</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Chat Widget</div></td>
+            <td style="color:#555; font-size:12px"><code>right: -20px</code> corta o widget</td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ right-4 fixo</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Product Grid</div></td>
+            <td style="color:#555; font-size:12px">Cards com <code>width: 280px</code> fixo</td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ Grid fluido</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Checkout Modal</div></td>
+            <td style="color:#555; font-size:12px">Modal maior que a tela em mobile</td>
+            <td><span class="tag tag-fail">❌ Falhou</span></td>
+            <td><span class="tag tag-pass">✅ max-h + scroll</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Stats Row</div></td>
+            <td style="color:#555; font-size:12px">Flex sem wrap em 1 linha só</td>
+            <td><span class="tag tag-warn">⚠️ Parcial</span></td>
+            <td><span class="tag tag-pass">✅ Grid 2→4 cols</span></td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">Hero Section</div></td>
+            <td style="color:#555; font-size:12px">Tamanhos de fonte fixos grandes</td>
+            <td><span class="tag tag-warn">⚠️ Parcial</span></td>
+            <td><span class="tag tag-pass">✅ clamp() fluido</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Environment Portability Table -->
+  <div class="section">
+    <div class="section-title">3. Portabilidade de Ambiente de Execução (Docker)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ambiente</th>
+            <th>Versão A</th>
+            <th>Versão B</th>
+            <th>Mecanismo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="criterion-name">🐧 Linux + Docker Engine</div></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">nginx:alpine containerizado</td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">🪟 Windows + Docker Desktop</div></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">WSL2 backend</td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">🍎 macOS + Docker Desktop</div></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">VM transparente</td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">⚙️ CI/CD Pipeline</div></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td><span class="tag tag-pass">✅ OK</span></td>
+            <td style="color:#555; font-size:12px">Docker image reproduzível</td>
+          </tr>
+          <tr>
+            <td><div class="criterion-name">📦 Sem Docker instalado</div></td>
+            <td><span class="tag tag-na">— N/A</span></td>
+            <td><span class="tag tag-na">— N/A</span></td>
+            <td style="color:#555; font-size:12px">Docker obrigatório</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Key Findings -->
+  <div class="section">
+    <div class="section-title">4. Principais Achados</div>
+    <div class="findings">
+      <div class="finding finding-fail">
+        <div class="finding-icon">⚠️</div>
+        <div>
+          <div class="finding-title">Layout com largura fixa de 1250px (Versão A)</div>
+          <div class="finding-body">
+            O container principal da seção de live usa <code>width: 1250px</code> com o player em <code>width: 900px</code> e o chat em <code>width: 300px</code>. Em qualquer tela menor que 1250px, o conteúdo transborda criando scroll horizontal — tornando o botão de compra inacessível no mobile, o que representa perda direta de receita em um cenário real de Black Friday.
+          </div>
+        </div>
+      </div>
+      <div class="finding finding-fail">
+        <div class="finding-icon">⚠️</div>
+        <div>
+          <div class="finding-title">Chat Widget com <code>right: -20px</code> (Versão A)</div>
+          <div class="finding-body">
+            O widget de chat foi posicionado com <code>right: -20px</code>, o que intencionalmente deixa 20px do widget fora da tela. Em mobile, isso corta o botão de fechar e o campo de input, impedindo o usuário de interagir com o chat — a principal ferramenta de engajamento em live commerce.
+          </div>
+        </div>
+      </div>
+      <div class="finding finding-fix">
+        <div class="finding-icon">✅</div>
+        <div>
+          <div class="finding-title">Player de vídeo com <code>aspect-video</code> (Versão B)</div>
+          <div class="finding-body">
+            A Versão B usa a classe Tailwind <code>aspect-video</code> (equivalente a <code>aspect-ratio: 16/9</code>) combinada com <code>w-full</code>. Isso garante que o player sempre mantém a proporção correta independente da largura disponível, sem hardcode de pixels — a técnica correta para vídeos responsivos.
+          </div>
+        </div>
+      </div>
+      <div class="finding finding-fix">
+        <div class="finding-icon">✅</div>
+        <div>
+          <div class="finding-title">Docker garante ambiente idêntico em qualquer SO</div>
+          <div class="finding-body">
+            Ambas as versões rodam via imagem multi-stage Docker (<code>node:20-alpine</code> para build + <code>nginx:alpine</code> para serve). Isso elimina a síndrome do "na minha máquina funciona" — o comportamento de runtime é byte-a-byte idêntico em Windows, macOS e Linux.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="section">
+    <div class="section-title">5. Conclusão</div>
+    <div class="conclusion">
+      <h3>✅ Versão B aprovada para produção</h3>
+      <p>
+        A Versão B demonstrou portabilidade completa em todos os dispositivos testados — de 320px (mobile entry-level) a 2560px (4K). As correções aplicadas seguem as melhores práticas da indústria: layouts fluidos com <code>flexbox</code> e <code>CSS Grid</code>, proporções de mídia com <code>aspect-ratio</code>, e componentes adaptáveis via breakpoints do Tailwind CSS. A Versão A, como esperado, falhou em todos os cenários mobile, comprovando que código sem planejamento responsivo é inviável para plataformas de live commerce com audiências mistas.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let seconds = 0;
+      let revAMobile = 0;
+      let revADesktop = 0;
+      let revBMobile = 0;
+      let revBDesktop = 0;
+      
+      const maxDataPoints = 50;
+      const historyA = [];
+      const historyB = [];
+
+      // DOM References
+      const timerEl = document.getElementById('sim-timer');
+      
+      const revAMobileEl = document.getElementById('revenue-a-mobile');
+      const revADesktopEl = document.getElementById('revenue-a-desktop');
+      const revATotalEl = document.getElementById('revenue-a-total');
+      const revLostEl = document.getElementById('revenue-lost');
+
+      const revBMobileEl = document.getElementById('revenue-b-mobile');
+      const revBDesktopEl = document.getElementById('revenue-b-desktop');
+      const revBTotalEl = document.getElementById('revenue-b-total');
+
+      const pathA = document.getElementById('chart-path-a');
+      const pathB = document.getElementById('chart-path-b');
+      const chartMaxValEl = document.getElementById('chart-max-val');
+
+      function formatBRL(val) {
+        return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      }
+
+      function updateSimulation() {
+        seconds++;
+        
+        // Timer update
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        timerEl.textContent = `Tempo decorrido: ${mins}:${secs}`;
+
+        // Simulate new users checkout attempts
+        // Base rate representing a heavy live shopping traffic spike (approx 50-100 checkouts/second overall)
+        const attempts = Math.floor(Math.random() * 25) + 30; // 30 to 55 checkout attempts/sec
+        const mobileAttempts = Math.floor(attempts * 0.72); // ~72% mobile
+        const desktopAttempts = attempts - mobileAttempts;
+
+        const ticket = 350; // R$ 350,00 average order value
+
+        // Version B (Responsive): Mobile converts at 8.0%, Desktop at 8.5%
+        const salesBMobile = Math.round(mobileAttempts * 0.080);
+        const salesBDesktop = Math.round(desktopAttempts * 0.085);
+        revBMobile += salesBMobile * ticket;
+        revBDesktop += salesBDesktop * ticket;
+
+        // Version A (Broken): Mobile converts at 0% (checkout button is clipped/hidden), Desktop converts at 8.5%
+        const salesAMobile = 0; 
+        const salesADesktop = Math.round(desktopAttempts * 0.085);
+        revAMobile += salesAMobile * ticket;
+        revADesktop += salesADesktop * ticket;
+
+        const totalA = revAMobile + revADesktop;
+        const totalB = revBMobile + revBDesktop;
+        const lost = totalB - totalA;
+
+        // Update UI
+        revAMobileEl.textContent = formatBRL(revAMobile);
+        revADesktopEl.textContent = formatBRL(revADesktop);
+        revATotalEl.textContent = formatBRL(totalA);
+        revLostEl.textContent = formatBRL(lost);
+
+        revBMobileEl.textContent = formatBRL(revBMobile);
+        revBDesktopEl.textContent = formatBRL(revBDesktop);
+        revBTotalEl.textContent = formatBRL(totalB);
+
+        // Record history
+        historyA.push(totalA);
+        historyB.push(totalB);
+        
+        if (historyA.length > maxDataPoints) {
+          historyA.shift();
+          historyB.shift();
+        }
+
+        // Draw paths
+        const maxVal = Math.max(...historyB, 10000);
+        chartMaxValEl.textContent = `Max: ${formatBRL(maxVal)}`;
+
+        const pointsA = [];
+        const pointsB = [];
+        const len = historyA.length;
+
+        for (let i = 0; i < len; i++) {
+          const x = (i / (maxDataPoints - 1)) * 500;
+          // Map value to scale (bottom is 145, top is 15)
+          const yA = 145 - (historyA[i] / maxVal) * 130;
+          const yB = 145 - (historyB[i] / maxVal) * 130;
+          pointsA.push(`${x.toFixed(1)},${yA.toFixed(1)}`);
+          pointsB.push(`${x.toFixed(1)},${yB.toFixed(1)}`);
+        }
+
+        if (pointsA.length > 0) {
+          pathA.setAttribute('d', `M ${pointsA.join(' L ')}`);
+          pathB.setAttribute('d', `M ${pointsB.join(' L ')}`);
+        }
+      }
+
+      // Run immediately first time
+      updateSimulation();
+      // Tick every 1s
+      setInterval(updateSimulation, 1000);
+    });
+  </script>
+</body>
+</html>

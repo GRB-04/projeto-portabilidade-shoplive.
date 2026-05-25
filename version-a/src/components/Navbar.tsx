@@ -25,8 +25,8 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
   return (
     // [PORTABILITY ISSUE] min-w-[1200px] forces a fixed width, causing horizontal scroll on mobile
-    <nav className="fixed top-0 left-0 z-50 bg-black/90 backdrop-blur-md border-b border-white/10" lang="pt-BR"
-         style={{ minWidth: '1200px', width: '100%' }}>
+    <nav className="fixed left-0 z-50 bg-black/90 backdrop-blur-md border-b border-white/10" lang="pt-BR"
+         style={{ top: '24px', minWidth: '1200px', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: '70px' }}>
 
         {/* Logo — [PORTABILITY ISSUE] Fixed font-size px, never scales */}

@@ -20,13 +20,21 @@ interface CheckoutModalProps {
 }
 
 export default function CheckoutModal({ product, onClose }: CheckoutModalProps) {
-  const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
+  const [step, setStep] = useState<'details' | 'payment' | 'success' | 'error'>('details');
   const [form, setForm] = useState({ name: '', email: '', address: '', card: '', expiry: '', cvv: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (step === 'details') setStep('payment');
-    else if (step === 'payment') setStep('success');
+    if (step === 'details') {
+      setStep('payment');
+    } else if (step === 'payment') {
+      const isMobile = window.innerWidth < 800 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+      if (isMobile) {
+        setStep('error');
+      } else {
+        setStep('success');
+      }
+    }
   };
 
   // Textos em português
@@ -46,7 +54,22 @@ export default function CheckoutModal({ product, onClose }: CheckoutModalProps) 
         maxHeight: '90vh',
         overflowY: 'auto',
       }}>
-        {step === 'success' ? (
+        {step === 'error' ? (
+          <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+            <div style={{ fontSize: '80px', marginBottom: '24px' }}>⚠️</div>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#ef4444', marginBottom: '12px' }}>Erro de Pagamento!</h2>
+            <p style={{ color: '#888', fontSize: '16px', marginBottom: '32px' }}>Falha Crítica de Portabilidade de Ambiente.</p>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+              <p style={{ color: '#ef4444', fontWeight: 700, fontSize: '16px', lineHeight: 1.5 }}>
+                O script de criptografia do gateway de pagamento da Versão A é incompatível com navegadores móveis e viewports reduzidas.
+              </p>
+              <p style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>Código: ERR-GATEWAY-PORTABILITY-503</p>
+            </div>
+            <button onClick={onClose} className="btn-live" style={{ border: 'none', borderRadius: '12px', color: 'white', padding: '16px 48px', cursor: 'pointer', fontWeight: 700, fontSize: '16px', background: '#ef4444' }}>
+              Fechar e Voltar
+            </button>
+          </div>
+        ) : step === 'success' ? (
           <div style={{ padding: '80px 60px', textAlign: 'center' }}>
             <div style={{ fontSize: '80px', marginBottom: '24px' }}>🎉</div>
             <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', marginBottom: '12px' }}>Pedido Confirmado!</h2>

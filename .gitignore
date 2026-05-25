@@ -1,0 +1,13 @@
+node_modules/
+version-a/node_modules/
+version-b/node_modules/
+tests/node_modules/
+dist/
+version-a/dist/
+version-b/dist/
+.env
+.DS_Store
+.system_generated/
+playwright-report/
+tests/playwright-report/
+tests/test-results/

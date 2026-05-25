@@ -12,63 +12,36 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { chatMessages } from '../data/products';
 
 interface ChatWidgetProps {
   isOpen: boolean;
   onToggle: () => void;
+  messages: any[];
+  onSendMessage: (text: string) => void;
 }
 
-export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
-  const [messages, setMessages] = useState(chatMessages);
+export default function ChatWidget({ isOpen, onToggle, messages, onSendMessage }: ChatWidgetProps) {
   const [inputVal, setInputVal] = useState('');
-  const [viewers] = useState(24831);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [viewers, setViewers] = useState(24831);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const interval = setInterval(() => {
+      setViewers(v => Math.max(10, v - Math.floor(Math.random() * 120 + 30)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (el && isOpen) {
+      el.scrollTop = el.scrollHeight;
     }
   }, [messages, isOpen]);
 
-  useEffect(() => {
-    const auto = setInterval(() => {
-      const bots = [
-        { user: 'ShopBot', avatar: '🤖', message: '⚡ Oferta relâmpago do Notebook Neo terminando em 2 minutos!' },
-        { user: 'Fan123', avatar: '🙋', message: 'Acabei de comprar o MacBook!!' },
-        { user: 'Viewer99', avatar: '👀', message: 'Tem frete grátis pros produtos da Apple?' },
-        { user: 'Caio_S', avatar: '🔥', message: 'Achei que ia acabar o estoque, consegui o meu!' },
-        { user: 'Mari_Lima', avatar: '😍', message: 'Notebook Neo é perfeito para edição de vídeo' },
-        { user: 'ShopBot', avatar: '🤖', message: '🛒 Restam apenas 15 unidades do iPad Air!' },
-        { user: 'João_P', avatar: '🤔', message: 'Parcela em 12x sem juros?' },
-        { user: 'Luiza_G', avatar: '💳', message: 'Cartão de crédito aprovou na hora!' },
-        { user: 'Gamer_Z', avatar: '🎮', message: 'Roda jogos pesados no Neo?' },
-        { user: 'ShopBot', avatar: '🤖', message: '✨ Aproveitem os cupons exclusivos da live!' },
-        { user: 'Thiago_BR', avatar: '🇧🇷', message: 'Chega em SP capital em quantos dias?' },
-        { user: 'Vivi_Tech', avatar: '👩‍💻', message: 'Gente, a tela desse MacBook é absurda de linda ao vivo' },
-        { user: 'Bia_Apple', avatar: '🍎', message: 'Comprei o iPhone 15 Pro, tô chorando de alegria!!' },
-        { user: 'Lucas_M', avatar: '😎', message: 'O desconto no Apple Watch tá insano, nunca vi isso' },
-        { user: 'Cris_77', avatar: '😱', message: 'Meu Deus, o site vai cair de tanta gente comprando' },
-        { user: 'ShopBot', avatar: '🤖', message: '🎁 Quem comprar agora ganha uma capa protetora de brinde!' },
-        { user: 'Rafa_Dev', avatar: '💻', message: 'O chip M3 do Neo compila código muito rápido?' },
-        { user: 'LiveHost', avatar: '🎙️', message: 'Sim Rafa! É um monstro para programação.' },
-        { user: 'Dani_K', avatar: '✨', message: 'Estou apaixonada na cor Prata do notebook' },
-        { user: 'Matias_V', avatar: '🏃', message: 'Correndo pegar o cartão da minha mãe kkkkk' },
-        { user: 'Juliana_F', avatar: '🥺', message: 'Poxa, perdi o cupom de 50%?' },
-        { user: 'ShopBot', avatar: '🤖', message: '🚨 Últimos 5 cupons de R$500 OFF disponíveis! Código: NEO500' },
-        { user: 'Carlos_DJ', avatar: '🎧', message: 'Esse Mac aguenta o Logic Pro com 100 trilhas fácil' },
-        { user: 'Paula_B', avatar: '💸', message: 'Adeus limite do Nubank 🥲' },
-        { user: 'Nando_X', avatar: '🚀', message: 'Já garanti o setup completo, venha ni mim Apple' },
-      ];
-      const msg = bots[Math.floor(Math.random() * bots.length)];
-      setMessages(prev => [...prev.slice(-40), { id: Date.now(), ...msg, time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }]);
-    }, 600);
-    return () => clearInterval(auto);
-  }, []);
-
   const sendMessage = () => {
     if (!inputVal.trim()) return;
-    setMessages(prev => [...prev, { id: Date.now(), user: 'You', avatar: '😊', message: inputVal.trim(), time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }]);
+    onSendMessage(inputVal.trim());
     setInputVal('');
   };
 
@@ -97,7 +70,7 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
           </div>
 
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {messages.map((m) => (
               <div key={m.id} className="chat-msg" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', flexShrink: 0 }}>{m.avatar}</div>
@@ -107,7 +80,6 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

@@ -40,7 +40,7 @@ export default function HeroSection() {
 
   return (
     // [PORTABILITY FIX] w-full — no fixed width, adapts to any screen
-    <section className="relative w-full pt-28 sm:pt-32 pb-16 sm:pb-20 overflow-hidden">
+    <section className="relative w-full pt-6 sm:pt-32 pb-16 sm:pb-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-cover bg-center opacity-20"
            style={{ backgroundImage: 'url(/hero_banner.png)' }} />
@@ -73,16 +73,18 @@ export default function HeroSection() {
           Ofertas exclusivas transmitidas ao vivo. Compre antes do timer zerar — preços caem a cada 60 segundos.
         </p>
 
-        {/* Countdown — [PORTABILITY FIX] flex-wrap allows stacking if needed */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-8">
+        {/* Countdown — [PORTABILITY FIX] label on top, boxes in a non-wrapping row below for perfect mobile alignment */}
+        <div className="flex flex-col gap-2 mb-8">
           <span className="text-xs font-bold text-gray-500 tracking-widest">OFERTA TERMINA EM</span>
-          {[{ label: 'HRS', val: timeLeft.h }, { label: 'MIN', val: timeLeft.m }, { label: 'SEG', val: timeLeft.s }].map(({ label, val }) => (
-            <div key={label} className="rounded-xl text-center px-4 py-2 sm:px-5 sm:py-3 min-w-[60px]"
-                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <div className="text-2xl sm:text-3xl font-black text-white leading-none">{pad(val)}</div>
-              <div className="text-[10px] text-gray-600 mt-1 font-semibold tracking-wider">{label}</div>
-            </div>
-          ))}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {[{ label: 'HRS', val: timeLeft.h }, { label: 'MIN', val: timeLeft.m }, { label: 'SEG', val: timeLeft.s }].map(({ label, val }) => (
+              <div key={label} className="rounded-xl text-center px-3 py-1.5 sm:px-5 sm:py-3 min-w-[55px] sm:min-w-[70px]"
+                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="text-xl sm:text-3xl font-black text-white leading-none font-mono">{pad(val)}</div>
+                <div className="text-[9px] sm:text-[10px] text-gray-600 mt-1 font-semibold tracking-wider">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* [PORTABILITY FIX] CTA buttons: flex-col on mobile → flex-row on sm+ */}

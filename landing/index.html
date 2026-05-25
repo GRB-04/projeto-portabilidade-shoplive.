@@ -36,7 +36,80 @@
     .logo-text { font-size: 32px; font-weight: 900; }
     .logo-text span { color: #ff2d2d; }
     h1 { font-size: clamp(18px, 4vw, 26px); font-weight: 800; text-align: center; margin-bottom: 8px; }
-    .subtitle { color: #666; font-size: 15px; text-align: center; margin-bottom: 48px; max-width: 480px; line-height: 1.6; }
+    .subtitle { color: #666; font-size: 15px; text-align: center; margin-bottom: 32px; max-width: 480px; line-height: 1.6; }
+
+    /* ── Viewport Meter ─────────────────────────── */
+    .viewport-meter {
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 32px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .meter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .meter-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #555;
+      text-transform: uppercase;
+    }
+    .meter-size {
+      font-size: 22px;
+      font-weight: 900;
+      color: white;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+    .meter-bar-track {
+      height: 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.2s ease, background 0.3s ease;
+    }
+    .meter-breakpoints {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #444;
+      margin-bottom: 14px;
+    }
+    .meter-device {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background 0.3s, color 0.3s;
+    }
+    .meter-device .device-icon { font-size: 18px; }
+    .device-mobile  { background: rgba(255,45,45,0.1);  color: #ff6b6b; }
+    .device-tablet  { background: rgba(251,191,36,0.1); color: #fbbf24; }
+    .device-desktop { background: rgba(34,197,94,0.1);  color: #4ade80; }
+    .device-wide    { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .meter-verdict {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.8;
+      margin-left: auto;
+    }
+
+    /* ── Cards ──────────────────────────────────── */
     .cards { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 640px; }
     @media (min-width: 520px) { .cards { flex-direction: row; } }
     .card {
@@ -82,8 +155,27 @@
     }
     .card-a .btn { background: rgba(255,45,45,0.2); color: #ff6b6b; }
     .card-b .btn { background: rgba(34,197,94,0.2); color: #4ade80; }
+
+    /* ── Footer ──────────────────────────────────── */
+    .footer-links {
+      margin-top: 32px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .footer-link {
+      font-size: 12px;
+      color: #444;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .footer-link:hover { color: #888; border-color: rgba(255,255,255,0.15); }
     .footer-note {
-      margin-top: 40px;
+      margin-top: 20px;
       text-align: center;
       font-size: 12px;
       color: #333;
@@ -91,6 +183,7 @@
       line-height: 1.7;
     }
     .footer-note strong { color: #555; }
+
     @keyframes pulseDot {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
@@ -108,6 +201,29 @@
   <p class="subtitle">
     Escolha uma versão para demonstrar responsividade mobile e teste de portabilidade entre dispositivos com Docker.
   </p>
+
+  <!-- ── Medidor de Viewport ao Vivo ────────────── -->
+  <div class="viewport-meter">
+    <div class="meter-header">
+      <span class="meter-label">📐 Sua Tela Agora</span>
+      <span class="meter-size" id="vp-size">--- px</span>
+    </div>
+    <div class="meter-bar-track">
+      <div class="meter-bar-fill" id="vp-bar" style="width:0%"></div>
+    </div>
+    <div class="meter-breakpoints">
+      <span>0</span>
+      <span>480px</span>
+      <span>768px</span>
+      <span>1024px</span>
+      <span>1440px+</span>
+    </div>
+    <div class="meter-device" id="vp-device">
+      <span class="device-icon" id="vp-icon">📱</span>
+      <span id="vp-label">Calculando...</span>
+      <span class="meter-verdict" id="vp-verdict"></span>
+    </div>
+  </div>
 
   <div class="cards">
     <!-- Versão A -->
@@ -143,10 +259,50 @@
     </a>
   </div>
 
+  <div class="footer-links">
+    <a class="footer-link" href="/report">📊 Relatório de Portabilidade</a>
+  </div>
+
   <p class="footer-note">
-    <strong>Rodando em Docker</strong> — Este aplicativo foi construído com React + TypeScript + Vite + Tailwind CSS
-    e servido via nginx. Ambas as versões rodam no mesmo container, acessível em
-    <strong>http://localhost:8080</strong>.
+    <strong>Rodando em Docker</strong> — React + TypeScript + Vite + Tailwind CSS
+    servido via nginx em <strong>http://localhost:8080</strong>.
   </p>
+
+  <script>
+    const MAX_WIDTH = 1440;
+
+    function classify(w) {
+      if (w < 480)  return { cls: 'device-mobile',  icon: '📱', label: 'Mobile pequeno (< 480px)',   verdict: '⚠️ Versão A quebra aqui!' };
+      if (w < 768)  return { cls: 'device-mobile',  icon: '📱', label: 'Mobile (480–767px)',          verdict: '⚠️ Versão A quebra aqui!' };
+      if (w < 1024) return { cls: 'device-tablet',  icon: '📟', label: 'Tablet (768–1023px)',         verdict: '⚠️ Versão A pode quebrar' };
+      if (w < 1440) return { cls: 'device-desktop', icon: '🖥️', label: 'Desktop (1024–1439px)',       verdict: '✅ Ambas funcionam' };
+      return              { cls: 'device-wide',    icon: '🖥️', label: 'Wide / 4K (≥ 1440px)',        verdict: '✅ Ambas funcionam' };
+    }
+
+    function update() {
+      const w = window.innerWidth;
+      const pct = Math.min(100, (w / MAX_WIDTH) * 100);
+      const info = classify(w);
+
+      document.getElementById('vp-size').textContent = w + 'px';
+
+      const bar = document.getElementById('vp-bar');
+      bar.style.width = pct + '%';
+      bar.style.background =
+        info.cls === 'device-mobile'  ? 'linear-gradient(90deg,#ff2d2d,#ff6b35)' :
+        info.cls === 'device-tablet'  ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' :
+        info.cls === 'device-desktop' ? 'linear-gradient(90deg,#16a34a,#22c55e)' :
+                                        'linear-gradient(90deg,#4f46e5,#818cf8)';
+
+      const dev = document.getElementById('vp-device');
+      dev.className = 'meter-device ' + info.cls;
+      document.getElementById('vp-icon').textContent    = info.icon;
+      document.getElementById('vp-label').textContent   = info.label;
+      document.getElementById('vp-verdict').textContent = info.verdict;
+    }
+
+    window.addEventListener('resize', update);
+    update();
+  </script>
 </body>
 </html>
